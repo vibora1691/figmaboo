@@ -1,0 +1,2 @@
+# figmaboo
+view figma protos
