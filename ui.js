@@ -4,13 +4,12 @@ const UI = {
   selected: null,
 
   // =========================
-  // MAIN RENDER
-  // =========================
   render(tree, positions) {
 
     const root = document.getElementById("sidebar");
 
-    const selected = PEOPLE.find(p => p.id === this.selected);
+    const selected =
+      PEOPLE.find(p => p.id === this.selected);
 
     root.innerHTML = `
       <div class="card">
@@ -24,65 +23,50 @@ const UI = {
       </div>
 
       ${this.renderNode("1", tree, positions)}
-
-      <div class="card">
-        <b>All People</b>
-        <small>(click to edit)</small>
-
-        ${PEOPLE.map(p => `
-          <div class="person" onclick="UI.select('${p.id}')">
-            ${p.name}
-          </div>
-        `).join("")}
-      </div>
     `;
   },
 
   // =========================
-  // EDIT PANEL
+  EDIT PANEL
   // =========================
   renderEditor(person) {
 
     if (!person) {
       return `
         <div class="card">
-          <b>No person selected</b>
-          <div>Click a name in "All People"</div>
+          Click a person to edit
         </div>
       `;
     }
 
     return `
       <div class="card">
-        <b>Edit Person</b>
+        <b>Editing</b>
+
+        <div style="opacity:.7;margin-bottom:6px">
+          ID: ${person.id}
+        </div>
 
         <input id="editName" value="${person.name}" />
 
         <button onclick="UI.save('${person.id}')">
-          Save Changes
+          Save
         </button>
       </div>
     `;
   },
 
   // =========================
-  // SELECT PERSON (FIXED)
+  SELECT + EDIT
   // =========================
   select(id) {
-
     this.selected = id;
-
-    // DO NOT rely on rerender timing for selection logic
     App.render();
   },
 
-  // =========================
-  // SAVE EDIT
-  // =========================
   save(id) {
 
     const input = document.getElementById("editName");
-
     if (!input) return;
 
     const name = input.value.trim();
@@ -99,7 +83,7 @@ const UI = {
   },
 
   // =========================
-  // TREE NODE
+  TREE NODE (FIXED CLICK LOGIC)
   // =========================
   renderNode(id, tree, positions) {
 
@@ -109,23 +93,28 @@ const UI = {
     const children = tree[id] || [];
     const open = this.expanded[id];
 
+    const isSelected = this.selected === id;
+
     return `
       <div style="margin-left:12px">
 
-        <div class="person">
+        <div class="person"
+             style="
+               border:${isSelected ? '1px solid #4ea1ff' : 'none'};
+             ">
 
-          <!-- EXPAND TOGGLE (SEPARATE AREA) -->
+          <!-- EXPAND BUTTON ONLY -->
           <span
-            style="cursor:pointer;font-weight:bold"
             onclick="UI.toggle('${id}')"
+            style="cursor:pointer;font-weight:bold"
           >
             ${open ? "▼" : "▶"}
           </span>
 
-          <!-- CLICK NAME TO EDIT -->
+          <!-- ENTIRE NAME = EDIT -->
           <span
-            style="margin-left:6px;cursor:pointer"
             onclick="UI.select('${id}')"
+            style="cursor:pointer;margin-left:6px"
           >
             ${person.name}
           </span>
@@ -149,7 +138,7 @@ const UI = {
   },
 
   // =========================
-  // TOGGLE EXPAND
+  TOGGLE EXPAND
   // =========================
   toggle(id) {
     this.expanded[id] = !this.expanded[id];
