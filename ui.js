@@ -1,53 +1,106 @@
 const UI = {
 
-  expanded: {},
+  expanded: {
+    "1": true
+  },
 
   render(childrenMap, positions) {
 
-    const sidebar = document.getElementById("sidebar");
+    const sidebar =
+      document.getElementById("sidebar");
 
     sidebar.innerHTML = `
+
       <div class="card">
-        <b>Genealogy Builder</b>
 
-        <input id="nameInput" placeholder="New person name"/>
-        <button onclick="UI.addPerson()">Add Person</button>
+        <h3>Genealogy Builder</h3>
 
-        <hr/>
+        <input
+          id="nameInput"
+          placeholder="New person name"
+        >
+
+        <button onclick="UI.addPerson()">
+          Add Person
+        </button>
+
+        <hr>
 
         <select id="parentSelect">
-          ${PEOPLE.map(p =>
-            `<option value="${p.id}">${p.name}</option>`
-          ).join("")}
+          ${PEOPLE.map(person => `
+            <option value="${person.id}">
+              ${person.name}
+            </option>
+          `).join("")}
         </select>
 
-        <input id="childName" placeholder="Child name"/>
-        <button onclick="UI.addChild()">Connect Child</button>
+        <input
+          id="childName"
+          placeholder="Child name"
+        >
+
+        <button onclick="UI.addChild()">
+          Add Child
+        </button>
+
       </div>
 
-      ${this.renderNode("1", childrenMap, positions)}
+      ${this.renderNode(
+        "1",
+        childrenMap,
+        positions
+      )}
     `;
   },
 
   renderNode(id, childrenMap, positions) {
 
-    const hasChildren = (childrenMap[id] || []).length > 0;
-    const open = this.expanded[id];
+    const person = MAP[id];
+
+    if (!person) {
+
+      return `
+        <div class="person">
+          Missing Person ${id}
+        </div>
+      `;
+    }
+
+    const children =
+      childrenMap[id] || [];
+
+    const isOpen =
+      this.expanded[id] || false;
 
     return `
-      <div style="margin-left:10px">
 
-        <div class="person" onclick="UI.toggle('${id}')">
-          ${MAP[id].name}
-          <div style="font-size:11px;opacity:0.5">
-            ${positions[id]}
+      <div style="margin-left:12px;">
+
+        <div
+          class="person"
+          onclick="UI.toggle('${id}')"
+        >
+
+          <strong>${person.name}</strong>
+
+          <div style="
+            font-size:12px;
+            opacity:.6;
+          ">
+            Position:
+            ${positions[id] || ""}
           </div>
+
         </div>
 
         ${
-          hasChildren && open
-            ? childrenMap[id].map(c =>
-                this.renderNode(c, childrenMap, positions)
+          isOpen
+            ? children.map(childId =>
+                this.renderNode(
+                  childId,
+                  childrenMap,
+                  positions
+                )
               ).join("")
             : ""
         }
@@ -57,36 +110,76 @@ const UI = {
   },
 
   toggle(id) {
-    this.expanded[id] = !this.expanded[id];
+
+    this.expanded[id] =
+      !this.expanded[id];
+
     App.render();
   },
 
   addPerson() {
 
-    const name = document.getElementById("nameInput").value;
+    const input =
+      document.getElementById(
+        "nameInput"
+      );
 
-    const id = Date.now().toString();
+    const name =
+      input.value.trim();
 
-    PEOPLE.push({ id, name });
+    if (!name) return;
 
-    save();
+    const id =
+      Date.now().toString();
+
+    PEOPLE.push({
+      id,
+      name
+    });
+
     rebuildMap();
+
+    input.value = "";
+
     App.render();
   },
 
   addChild() {
 
-    const parentId = document.getElementById("parentSelect").value;
-    const name = document.getElementById("childName").value;
+    const parentId =
+      document.getElementById(
+        "parentSelect"
+      ).value;
 
-    const id = Date.now().toString();
+    const childName =
+      document.getElementById(
+        "childName"
+      ).value
+      .trim();
 
-    PEOPLE.push({ id, name });
+    if (!childName) return;
 
-    RELATIONS.push({ parent: parentId, child: id });
+    const childId =
+      Date.now().toString();
 
-    save();
+    PEOPLE.push({
+      id: childId,
+      name: childName
+    });
+
+    RELATIONS.push({
+      parent: parentId,
+      child: childId
+    });
+
     rebuildMap();
+
+    document.getElementById(
+      "childName"
+    ).value = "";
+
+    this.expanded[parentId] = true;
+
     App.render();
   }
 };
