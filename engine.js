@@ -2,21 +2,21 @@ const Engine = {
 
   buildTree() {
 
-    const childrenMap = {};
+    const tree = {};
 
-    RELATIONS.forEach(rel => {
+    RELATIONS.forEach(r => {
 
-      if (!childrenMap[rel.parent]) {
-        childrenMap[rel.parent] = [];
+      if (!tree[r.parent]) {
+        tree[r.parent] = [];
       }
 
-      childrenMap[rel.parent].push(rel.child);
+      tree[r.parent].push(r.child);
     });
 
-    return childrenMap;
+    return tree;
   },
 
-  buildPositions(rootId, childrenMap) {
+  buildPositions(rootId, tree) {
 
     const positions = {};
 
@@ -24,20 +24,20 @@ const Engine = {
 
       positions[id] = path;
 
-      const children = childrenMap[id] || [];
+      const children = tree[id] || [];
 
-      children.forEach((childId, index) => {
-
-        walk(
-          childId,
-          `${path}.${index + 1}`
-        );
-
+      children.forEach((childId, i) => {
+        walk(childId, `${path}.${i + 1}`);
       });
     }
 
     walk(rootId, "1");
 
     return positions;
+  },
+
+  getGeneration(position) {
+    if (!position) return 1;
+    return position.split(".").length;
   }
 };
