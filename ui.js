@@ -145,3 +145,6 @@ const UI = {
     App.render();
   }
 };
+
+// 🔥 THIS IS REQUIRED FOR INLINE ACCESS
+window.UI = UI;
