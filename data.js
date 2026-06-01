@@ -10,10 +10,13 @@ let RELATIONS = JSON.parse(localStorage.getItem("relations")) || [
   { parent: "1", child: "3" },
   { parent: "3", child: "4" }
 ];
-
 const MAP = {};
+
 function rebuildMap() {
-  MAP = {};
-  PEOPLE.forEach(p => MAP[p.id] = p);
+
+  Object.keys(MAP).forEach(key => delete MAP[key]);
+
+  PEOPLE.forEach(p => {
+    MAP[p.id] = p;
+  });
 }
-rebuildMap();
