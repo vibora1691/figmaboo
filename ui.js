@@ -1,106 +1,80 @@
 const UI = {
 
-  expanded: {
-    "1": true
-  },
+  expanded: { "1": true },
 
-  render(childrenMap, positions) {
+  render(tree, positions) {
 
-    const sidebar =
-      document.getElementById("sidebar");
+    const root = document.getElementById("sidebar");
 
-    sidebar.innerHTML = `
+    root.innerHTML = `
+      <div class="card">
+        <b>Genealogy Builder</b>
+      </div>
 
       <div class="card">
+        <b>Add Person</b>
+        <input id="nameInput" placeholder="Person name">
+        <button onclick="UI.addPerson()">Add</button>
+      </div>
 
-        <h3>Genealogy Builder</h3>
-
-        <input
-          id="nameInput"
-          placeholder="New person name"
-        >
-
-        <button onclick="UI.addPerson()">
-          Add Person
-        </button>
-
-        <hr>
+      <div class="card">
+        <b>Add Child</b>
 
         <select id="parentSelect">
-          ${PEOPLE.map(person => `
-            <option value="${person.id}">
-              ${person.name}
+          ${PEOPLE.map(p => `
+            <option value="${p.id}">
+              ${p.name}
             </option>
           `).join("")}
         </select>
 
-        <input
-          id="childName"
-          placeholder="Child name"
-        >
-
-        <button onclick="UI.addChild()">
-          Add Child
-        </button>
-
+        <input id="childName" placeholder="Child name">
+        <button onclick="UI.addChild()">Add Child</button>
       </div>
 
-      ${this.renderNode(
-        "1",
-        childrenMap,
-        positions
-      )}
+      <div class="card">
+        <b>Family Tree</b>
+      </div>
+
+      ${this.renderNode("1", tree, positions)}
+
+      <div class="card">
+        <b>All People (Always Visible)</b>
+
+        ${PEOPLE.map(p => `
+          <div class="person">
+            ${p.name}
+            <div style="font-size:12px;opacity:0.6">
+              ${positions[p.id] || "unlinked"}
+            </div>
+          </div>
+        `).join("")}
+      </div>
     `;
   },
 
-  renderNode(id, childrenMap, positions) {
+  renderNode(id, tree, positions) {
 
     const person = MAP[id];
+    if (!person) return "";
 
-    if (!person) {
-
-      return `
-        <div class="person">
-          Missing Person ${id}
-        </div>
-      `;
-    }
-
-    const children =
-      childrenMap[id] || [];
-
-    const isOpen =
-      this.expanded[id] || false;
+    const children = tree[id] || [];
+    const open = this.expanded[id];
 
     return `
+      <div style="margin-left:12px">
 
-      <div style="margin-left:12px;">
-
-        <div
-          class="person"
-          onclick="UI.toggle('${id}')"
-        >
-
-          <strong>${person.name}</strong>
-
-          <div style="
-            font-size:12px;
-            opacity:.6;
-          ">
-            Position:
+        <div class="person" onclick="UI.toggle('${id}')">
+          <b>${person.name}</b>
+          <div style="font-size:12px;opacity:0.6">
             ${positions[id] || ""}
           </div>
-
         </div>
 
         ${
-          isOpen
-            ? children.map(childId =>
-                this.renderNode(
-                  childId,
-                  childrenMap,
-                  positions
-                )
+          open
+            ? children.map(c =>
+                this.renderNode(c, tree, positions)
               ).join("")
             : ""
         }
@@ -110,31 +84,26 @@ const UI = {
   },
 
   toggle(id) {
-
-    this.expanded[id] =
-      !this.expanded[id];
-
+    this.expanded[id] = !this.expanded[id];
     App.render();
   },
 
   addPerson() {
 
     const input =
-      document.getElementById(
-        "nameInput"
-      );
+      document.getElementById("nameInput");
 
-    const name =
-      input.value.trim();
-
+    const name = input.value.trim();
     if (!name) return;
 
-    const id =
-      Date.now().toString();
+    const id = Date.now().toString();
 
-    PEOPLE.push({
-      id,
-      name
+    PEOPLE.push({ id, name });
+
+    // 🔥 IMPORTANT: attach to root so it's always visible
+    RELATIONS.push({
+      parent: "1",
+      child: id
     });
 
     rebuildMap();
@@ -147,36 +116,25 @@ const UI = {
   addChild() {
 
     const parentId =
-      document.getElementById(
-        "parentSelect"
-      ).value;
+      document.getElementById("parentSelect").value;
 
-    const childName =
-      document.getElementById(
-        "childName"
-      ).value
-      .trim();
+    const name =
+      document.getElementById("childName").value.trim();
 
-    if (!childName) return;
+    if (!name) return;
 
-    const childId =
-      Date.now().toString();
+    const id = Date.now().toString();
 
-    PEOPLE.push({
-      id: childId,
-      name: childName
-    });
+    PEOPLE.push({ id, name });
 
     RELATIONS.push({
       parent: parentId,
-      child: childId
+      child: id
     });
 
     rebuildMap();
 
-    document.getElementById(
-      "childName"
-    ).value = "";
+    document.getElementById("childName").value = "";
 
     this.expanded[parentId] = true;
 
