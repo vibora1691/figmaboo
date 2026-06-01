@@ -1,3 +1,7 @@
+console.log("PEOPLE CHECK:", typeof PEOPLE);
+console.log("MAP CHECK:", typeof MAP);
+console.log("APP CHECK:", typeof App);
+
 const UI = {
 
   expanded: { "1": true },
