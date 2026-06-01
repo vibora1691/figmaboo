@@ -3,19 +3,21 @@ const UI = {
   expanded: { "1": true },
   selected: null,
 
+  // =========================
+  // MAIN RENDER
+  // =========================
   render(tree, positions) {
 
     const root = document.getElementById("sidebar");
 
-    const selectedPerson =
-      PEOPLE.find(p => p.id === this.selected);
+    const selected = PEOPLE.find(p => p.id === this.selected);
 
     root.innerHTML = `
       <div class="card">
         <b>Genealogy Builder</b>
       </div>
 
-      ${this.renderEditor(selectedPerson)}
+      ${this.renderEditor(selected)}
 
       <div class="card">
         <b>Family Tree</b>
@@ -25,6 +27,7 @@ const UI = {
 
       <div class="card">
         <b>All People</b>
+        <small>(click to edit)</small>
 
         ${PEOPLE.map(p => `
           <div class="person" onclick="UI.select('${p.id}')">
@@ -35,12 +38,16 @@ const UI = {
     `;
   },
 
+  // =========================
+  // EDIT PANEL
+  // =========================
   renderEditor(person) {
 
     if (!person) {
       return `
         <div class="card">
-          <b>Select a person to edit</b>
+          <b>No person selected</b>
+          <div>Click a name in "All People"</div>
         </div>
       `;
     }
@@ -51,28 +58,37 @@ const UI = {
 
         <input id="editName" value="${person.name}" />
 
-        <button onclick="UI.saveEdit('${person.id}')">
-          Save
+        <button onclick="UI.save('${person.id}')">
+          Save Changes
         </button>
       </div>
     `;
   },
 
+  // =========================
+  // SELECT PERSON (FIXED)
+  // =========================
   select(id) {
+
     this.selected = id;
+
+    // DO NOT rely on rerender timing for selection logic
     App.render();
   },
 
-  saveEdit(id) {
+  // =========================
+  // SAVE EDIT
+  // =========================
+  save(id) {
 
-    const input =
-      document.getElementById("editName");
+    const input = document.getElementById("editName");
+
+    if (!input) return;
 
     const name = input.value.trim();
     if (!name) return;
 
-    const person =
-      PEOPLE.find(p => p.id === id);
+    const person = PEOPLE.find(p => p.id === id);
 
     if (person) {
       person.name = name;
@@ -82,6 +98,9 @@ const UI = {
     App.render();
   },
 
+  // =========================
+  // TREE NODE
+  // =========================
   renderNode(id, tree, positions) {
 
     const person = MAP[id];
@@ -93,17 +112,28 @@ const UI = {
     return `
       <div style="margin-left:12px">
 
-        <div class="person"
-             onclick="UI.toggle('${id}')">
+        <div class="person">
 
-          <b onclick="UI.select('${id}')"
-             style="cursor:pointer">
+          <!-- EXPAND TOGGLE (SEPARATE AREA) -->
+          <span
+            style="cursor:pointer;font-weight:bold"
+            onclick="UI.toggle('${id}')"
+          >
+            ${open ? "▼" : "▶"}
+          </span>
+
+          <!-- CLICK NAME TO EDIT -->
+          <span
+            style="margin-left:6px;cursor:pointer"
+            onclick="UI.select('${id}')"
+          >
             ${person.name}
-          </b>
+          </span>
 
           <div style="font-size:12px;opacity:0.6">
             ${positions[id] || ""}
           </div>
+
         </div>
 
         ${
@@ -118,6 +148,9 @@ const UI = {
     `;
   },
 
+  // =========================
+  // TOGGLE EXPAND
+  // =========================
   toggle(id) {
     this.expanded[id] = !this.expanded[id];
     App.render();
