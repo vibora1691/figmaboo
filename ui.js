@@ -148,3 +148,14 @@ const UI = {
 
 // 🔥 THIS IS REQUIRED FOR INLINE ACCESS
 window.UI = UI;
+
+try {
+
+  window.UI = UI;
+  console.log("UI ATTACHED OK");
+
+} catch (e) {
+
+  console.error("UI FAILED:", e);
+
+}
