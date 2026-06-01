@@ -1,13 +1,16 @@
 const Engine = {
 
   buildTree() {
+
     const childrenMap = {};
 
-    RELATIONS.forEach(r => {
-      if (!childrenMap[r.parent]) {
-        childrenMap[r.parent] = [];
+    RELATIONS.forEach(rel => {
+
+      if (!childrenMap[rel.parent]) {
+        childrenMap[rel.parent] = [];
       }
-      childrenMap[r.parent].push(r.child);
+
+      childrenMap[rel.parent].push(rel.child);
     });
 
     return childrenMap;
@@ -24,7 +27,12 @@ const Engine = {
       const children = childrenMap[id] || [];
 
       children.forEach((childId, index) => {
-        walk(childId, `${path}.${index + 1}`);
+
+        walk(
+          childId,
+          `${path}.${index + 1}`
+        );
+
       });
     }
 
